@@ -1,9 +1,7 @@
 
-import 'package:flutter/foundation.dart';
-
 class Todo{
-  String id = '4';
-  String title = '';
+  String id = '';
+  String title;
 
-  Todo(this.title);
+  Todo({required this.title});
 }

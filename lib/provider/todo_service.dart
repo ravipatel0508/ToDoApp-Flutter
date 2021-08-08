@@ -2,15 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:todo/service/todo.dart';
 
-class ToDoService with ChangeNotifier{
-  List<Todo> todos = [];
-
+class ToDoService with ChangeNotifier {
+  List todos = [];
   FirebaseFirestore firestore = FirebaseFirestore.instance;
+  bool _checkBoxValue = false;
+  bool get checkBoxValue => _checkBoxValue;
 
-  addTodo(Todo todo) async{
-
+  addTodo(Todo todo) async {
     await firestore.collection("todos").add({
-      "title" : todo.title,
+      "title": todo.title,
     }).then((value) {
       todo.id = value.id;
 
@@ -20,25 +20,41 @@ class ToDoService with ChangeNotifier{
     notifyListeners();
   }
 
-  deleteTodo(id)async{
+  updateTodo(Todo todo) async {
+    try{
+      await firestore.collection("todos").doc(todo.id).update({
+        "title": todo.title,
+        "isCheck": false
+      });
+    }catch(e){
+      print(e);
+    }
+    //todos[index] = todo;
+    notifyListeners();
+  }
 
-    var index = todos.indexWhere((element) => element.id == id);
-    if(index != -1){
+  deleteTodo(id) async {
+    try{
       await firestore.collection("todos").doc(id).delete();
-      todos.removeAt(index);
+    }catch(e){
+      print(e);
     }
     notifyListeners();
   }
 
-  updateTodo(Todo todo)async{
+  checkBox(bool val, id)async{
+    try{
+      await firestore.collection('todos').doc(id).update({"isCheck": val});
+    }catch(e){
 
-    var index = todos.indexWhere((element) => element.id == todo.id);
-    if(index != -1){
-      await firestore.collection("todos").doc(todo.id).update({
-        "title": todo.title,
-      });
-      todos[index] = todo;
     }
-    notifyListeners();
+      _checkBoxValue = val;
+      notifyListeners();
+      /*if(_checkBoxValue == true){
+        _checkBoxValue = false;
+      }
+      else{
+        _checkBoxValue = true;
+      }*/
   }
 }

@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:todo/service/todo.dart';
@@ -11,8 +12,9 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController _textEditingController =
-      TextEditingController(text: 'yy');
+  TextEditingController _textEditingController = TextEditingController(text: 'yy');
+  bool _checkBoxValue = true;
+
 
   @override
   Widget build(BuildContext context) {
@@ -36,7 +38,7 @@ class _HomePageState extends State<HomePage> {
                   onPressed: () {
                     context
                         .read<ToDoService>()
-                        .addTodo(Todo(_textEditingController.text));
+                        .addTodo(Todo(title: _textEditingController.text));
                   },
                   child: Icon(Icons.add),
                 )
@@ -44,41 +46,46 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: 20),
               Container(
                 height: MediaQuery.of(context).size.height,
-                child: Consumer<ToDoService>(
-                  builder: (context, value, child) => ListView.builder(
-                    itemCount: value.todos.length,
-                    itemBuilder: (context, index) => Card(
-                      elevation: 10,
-                      margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                      child: ListTile(
-                          leading: Checkbox(
-                            value: true,
-                            onChanged: (value) {},
-                          ),
-                          title: Text(value.todos[index].title),
-                          trailing: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: <Widget>[
-                              IconButton(
-                                  onPressed: () {
-                                    var tempTodo = Todo("update");
-                                    tempTodo.id = value.todos[index].id;
-                                    context
-                                        .read<ToDoService>()
-                                        .updateTodo(tempTodo);
-                                  },
-                                  icon: Icon(Icons.edit)),
-                              IconButton(
-                                  onPressed: () {
-                                    context
-                                        .read<ToDoService>()
-                                        .deleteTodo(value.todos[index].id);
-                                  },
-                                  icon: Icon(Icons.delete)),
-                            ],
-                          )),
-                    ),
-                  ),
+                child: StreamBuilder(
+                  stream: FirebaseFirestore.instance.collection('todos').snapshots(),
+                  builder: (BuildContext context, AsyncSnapshot<dynamic> streamSnapshot) {
+                    return Consumer<ToDoService>(
+                      builder: (context, value, child) => ListView.builder(
+                        itemCount: streamSnapshot.data.docs.length,
+                        itemBuilder: (context, index) => Card(
+                          elevation: 10,
+                          margin: EdgeInsets.fromLTRB(10, 10, 10, 0),
+                          child: ListTile(
+                              leading: Checkbox(
+                                value: streamSnapshot.data.docs[index]['isCheck'],
+                                onChanged: (val) {
+                                  context.read<ToDoService>().checkBox(val!,streamSnapshot.data.docs[index].id);
+                                },
+                              ),
+                              title: Text(streamSnapshot.data.docs[index]['title']),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: <Widget>[
+                                  IconButton(
+                                      onPressed: () {
+                                        var tempTodo = Todo(title: _textEditingController.text);
+                                        tempTodo.id = streamSnapshot.data.docs[index].id;
+                                        context.read<ToDoService>().updateTodo(tempTodo);
+                                      },
+                                      icon: Icon(Icons.edit)),
+                                  IconButton(
+                                      onPressed: () {
+                                        print('${streamSnapshot.data.docs[index].id}');
+                                        //context.read<ToDoService>().deleteTodo(value.todos[index].id);
+                                        context.read<ToDoService>().deleteTodo(streamSnapshot.data.docs[index].id);
+                                      },
+                                      icon: Icon(Icons.delete)),
+                                ],
+                              )),
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ),
             ],
