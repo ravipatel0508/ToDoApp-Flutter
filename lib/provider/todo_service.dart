@@ -11,6 +11,7 @@ class ToDoService with ChangeNotifier {
   addTodo(Todo todo) async {
     await firestore.collection("todos").add({
       "title": todo.title,
+      "isCheck": false
     }).then((value) {
       todo.id = value.id;
 
