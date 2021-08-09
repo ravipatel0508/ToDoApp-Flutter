@@ -30,6 +30,7 @@
   <!-- This script installs service_worker.js to provide PWA functionality to
        application. For more information, see:
        https://developers.google.com/web/fundamentals/primers/service-workers -->
+
   <script>
     var serviceWorkerVersion = null;
     var scriptLoaded = false;
@@ -93,6 +94,28 @@
       // Service workers not supported. Just drop the <script> tag.
       loadMainDartJs();
     }
+  </script>
+
+  <!-- The core Firebase JS SDK is always required and must be listed first -->
+  <script src="https://www.gstatic.com/firebasejs/8.9.0/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.8.1/firebase-firestore.js"></script>
+
+  <!-- TODO: Add SDKs for Firebase products that you want to use
+       https://firebase.google.com/docs/web/setup#available-libraries -->
+  <script src="https://www.gstatic.com/firebasejs/8.9.0/firebase-analytics.js"></script>
+
+  <script>
+  var firebaseConfig = {
+    apiKey: "AIzaSyD9gfcX3sO5UKVCfkrI64uqp9XozTm4yh4",
+    authDomain: "todo-app-f50d6.firebaseapp.com",
+    projectId: "todo-app-f50d6",
+    storageBucket: "todo-app-f50d6.appspot.com",
+    messagingSenderId: "528821105273",
+    appId: "1:528821105273:web:99ed98589876cc29ca1aa8",
+    measurementId: "G-MZHRJX91DG"
+  };
+  firebase.initializeApp(firebaseConfig);
+  firebase.analytics();
   </script>
 </body>
 </html>
