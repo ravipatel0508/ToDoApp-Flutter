@@ -8,5 +8,5 @@ This is the todo application with firebase store.
 
 Below are the screenshot of the application.
 
-![Image](snapshot/mobile view.png)
-![Image](snapshot/Web View.PNG)
+<img src="snapshot/mobile view.png" width="200">
+<img src="snapshot/Web View.PNG" width="400">
