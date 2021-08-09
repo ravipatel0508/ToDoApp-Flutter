@@ -91,13 +91,15 @@ class _HomePageState extends State<HomePage> {
                                         elevation: 5,
                                         child: ListTile(
                                           leading: Checkbox(
+                                            activeColor: Colors.black,
+                                            shape: CircleBorder(),
                                             value: streamSnapshot.data.docs[index]['isCheck'],
                                             onChanged: (val) async{
                                               await context.read<ToDoService>().checkBox(val!, streamSnapshot.data.docs[index].id);
                                               },
                                           ),
                                           title: streamSnapshot.data.docs[index]['isText'] ? streamSnapshot.data.docs[index]['isCheck'] ? Text(streamSnapshot.data.docs[index]['title'], style: TextStyle(decoration: TextDecoration.lineThrough),) : Text(streamSnapshot.data.docs[index]['title'])
-                                              : TextField(controller: _updateTextEditingController,
+                                              : TextField(controller: _updateTextEditingController,autofocus: true,
                                           ),
                                           trailing: Row(
                                             mainAxisSize: MainAxisSize.min,
