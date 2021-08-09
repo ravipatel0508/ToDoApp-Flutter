@@ -1,16 +1,12 @@
 # todo
 
-A new Flutter project.
+To-Do App
 
 ## Getting Started
 
-This project is a starting point for a Flutter application.
+This is the todo application with firebase store.
 
-A few resources to get you started if this is your first Flutter project:
+Below are the screenshot of the application.
 
-- [Lab: Write your first Flutter app](https://flutter.dev/docs/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
-
-For help getting started with Flutter, view our
-[online documentation](https://flutter.dev/docs), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+![Image](snapshot/mobile view.png)
+![Image](snapshot/Web View.PNG)
