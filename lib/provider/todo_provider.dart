@@ -3,38 +3,40 @@ import 'package:flutter/material.dart';
 import 'package:todo/service/todo.dart';
 
 class ToDoService with ChangeNotifier {
-  List todos = [];
-  FirebaseFirestore firestore = FirebaseFirestore.instance;
-  bool _checkBoxValue = false;
-  bool get checkBoxValue => _checkBoxValue;
 
-  addTodo(Todo todo) async {
+  bool checkBoxValue = false;
+  bool isText = true;
+
+  FirebaseFirestore firestore = FirebaseFirestore.instance;
+
+  Future addTodo(Todo todo) async {
     await firestore.collection("todos").add({
       "title": todo.title,
-      "isCheck": false
+      "isCheck": false,
+      "isText": true
     }).then((value) {
       todo.id = value.id;
-
-      todos.add(todo);
     });
 
     notifyListeners();
   }
 
-  updateTodo(Todo todo) async {
+  Future updateTodo(Todo todo, bol) async {
+    bol ? bol = false : bol = true;
     try{
       await firestore.collection("todos").doc(todo.id).update({
         "title": todo.title,
-        "isCheck": false
+        "isCheck": false,
+        "isText": bol
       });
     }catch(e){
       print(e);
     }
-    //todos[index] = todo;
+
     notifyListeners();
   }
 
-  deleteTodo(id) async {
+  Future deleteTodo(id) async {
     try{
       await firestore.collection("todos").doc(id).delete();
     }catch(e){
@@ -43,19 +45,14 @@ class ToDoService with ChangeNotifier {
     notifyListeners();
   }
 
-  checkBox(bool val, id)async{
+  Future checkBox(bool val, id)async{
     try{
       await firestore.collection('todos').doc(id).update({"isCheck": val});
     }catch(e){
-
+      print(e);
     }
-      _checkBoxValue = val;
-      notifyListeners();
-      /*if(_checkBoxValue == true){
-        _checkBoxValue = false;
-      }
-      else{
-        _checkBoxValue = true;
-      }*/
+    checkBoxValue = val;
+
+    notifyListeners();
   }
 }

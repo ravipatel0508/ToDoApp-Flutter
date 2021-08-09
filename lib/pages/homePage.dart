@@ -2,7 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:todo/service/todo.dart';
-import 'package:todo/provider/todo_service.dart';
+import 'package:todo/provider/todo_provider.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
@@ -12,8 +12,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  TextEditingController _textEditingController = TextEditingController();
+  TextEditingController _addTextEditingController = TextEditingController();
+  TextEditingController _updateTextEditingController = TextEditingController();
   static const bgColor = const Color(0xffEBEBEB);
+  final _formKey = GlobalKey<FormState>();
 
   @override
   Widget build(BuildContext context) {
@@ -39,18 +41,24 @@ class _HomePageState extends State<HomePage> {
                           SizedBox(height: 20),
                           Row(children: [
                             Flexible(
-                              child: TextField(
-                                controller: _textEditingController,
-                                decoration: InputDecoration(
-                                    contentPadding: const EdgeInsets.symmetric(
-                                        vertical: 10, horizontal: 10),
-                                    focusColor: Colors.amberAccent,
-                                    filled: true,
-                                    fillColor: Colors.white,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(20),
-                                    ),
-                                    hintText: 'Type something here...'),
+                              child: Form(
+                                key: _formKey,
+                                child: TextFormField(
+                                  validator: (value) {
+                                    if(value!.isEmpty){
+                                      return "Please enter your TODO...";
+                                    }
+                                    return null;
+                                  },
+                                  controller: _addTextEditingController,
+                                  decoration: InputDecoration(
+                                      contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 10),
+                                      filled: true,
+                                      fillColor: Colors.white,
+                                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(20)
+                                      ),
+                                      hintText: 'Type something here...'),
+                                ),
                               ),
                             ),
                             SizedBox(width: 10),
@@ -59,9 +67,11 @@ class _HomePageState extends State<HomePage> {
                               backgroundColor: Colors.black,
                               mini: true,
                               tooltip: "Add TODO",
-                              onPressed: () {
-                                context.read<ToDoService>().addTodo(
-                                    Todo(title: _textEditingController.text));
+                              onPressed: () async{
+                                if(_formKey.currentState!.validate()){
+                                  await context.read<ToDoService>().addTodo(Todo(title: _addTextEditingController.text));
+                                  _addTextEditingController.clear();
+                                }
                               },
                             )
                           ]),
@@ -71,54 +81,58 @@ class _HomePageState extends State<HomePage> {
                             child: Consumer<ToDoService>(
                               builder: (context, value, child) =>
                                   ListView.builder(
-                                itemCount: streamSnapshot.data.docs.length,
-                                itemBuilder: (context, index) => Container(
-                                  padding: EdgeInsets.only(bottom: 5),
-                                  child: Card(
-                                    shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(7.0)),
-                                    elevation: 5,
-                                    child: ListTile(
-                                      leading: Checkbox(
-                                        value: streamSnapshot.data.docs[index]
-                                            ['isCheck'],
-                                        onChanged: (val) {
-                                          context.read<ToDoService>().checkBox(
-                                              val!,
-                                              streamSnapshot.data.docs[index].id);
-                                        },
-                                      ),
-                                      title: Text(streamSnapshot.data.docs[index]
-                                          ['title']),
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: <Widget>[
-                                          IconButton(
-                                              onPressed: () {
-                                                var tempTodo = Todo(
-                                                    title: _textEditingController
-                                                        .text);
-                                                tempTodo.id = streamSnapshot
-                                                    .data.docs[index].id;
-                                                context
-                                                    .read<ToDoService>()
-                                                    .updateTodo(tempTodo);
+                                    itemCount: streamSnapshot.data.docs.length,
+                                    itemBuilder: (context, index) => Container(
+                                      padding: EdgeInsets.only(bottom: 5),
+                                      child: Card(
+                                        shape: RoundedRectangleBorder(
+                                          borderRadius: BorderRadius.circular(7.0),
+                                        ),
+                                        elevation: 5,
+                                        child: ListTile(
+                                          leading: Checkbox(
+                                            value: streamSnapshot.data.docs[index]['isCheck'],
+                                            onChanged: (val) async{
+                                              await context.read<ToDoService>().checkBox(val!, streamSnapshot.data.docs[index].id);
                                               },
-                                              icon: Icon(Icons.edit)),
-                                          IconButton(
-                                              onPressed: () {
-                                                context
-                                                    .read<ToDoService>()
-                                                    .deleteTodo(streamSnapshot
-                                                        .data.docs[index].id);
-                                              },
-                                              icon: Icon(Icons.delete)),
-                                        ],
+                                          ),
+                                          title: streamSnapshot.data.docs[index]['isText'] ? streamSnapshot.data.docs[index]['isCheck'] ? Text(streamSnapshot.data.docs[index]['title'], style: TextStyle(decoration: TextDecoration.lineThrough),) : Text(streamSnapshot.data.docs[index]['title'])
+                                              : TextField(controller: _updateTextEditingController,
+                                          ),
+                                          trailing: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: <Widget>[
+
+
+                                              IconButton(
+                                                icon: streamSnapshot.data.docs[index]['isText'] ? Icon(Icons.edit) : Icon(Icons.check),
+                                                onPressed: () async{
+                                                  if(streamSnapshot.data.docs[index]['isText']){
+                                                    _updateTextEditingController = TextEditingController(text: streamSnapshot.data.docs[index]['title']);
+                                                  }
+
+                                                  var tempTodo = Todo(title: _updateTextEditingController.text);
+
+                                                  if(!streamSnapshot.data.docs[index]['isText'] && tempTodo.title.length == 0){
+                                                    await context.read<ToDoService>().deleteTodo(streamSnapshot.data.docs[index].id);
+                                                  }else{
+                                                    tempTodo.id = streamSnapshot.data.docs[index].id;
+                                                    await context.read<ToDoService>().updateTodo(tempTodo, streamSnapshot.data.docs[index]['isText']);
+                                                  }
+                                                },
+                                              ),
+                                              IconButton(
+                                                icon: Icon(Icons.delete),
+                                                onPressed: () async{
+                                                  await context.read<ToDoService>().deleteTodo(streamSnapshot.data.docs[index].id);
+                                                  },
+                                              ),
+                                            ],
+                                          ),
+                                        ),
                                       ),
                                     ),
                                   ),
-                                ),
-                              ),
                             ),
                           ),
                         ],
