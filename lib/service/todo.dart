@@ -1,5 +1,4 @@
-
-class Todo{
+class Todo {
   String id = '';
   String title;
 

@@ -12,6 +12,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+
   TextEditingController _addTextEditingController = TextEditingController();
   TextEditingController _updateTextEditingController = TextEditingController();
   static const bgColor = const Color(0xffEBEBEB);
@@ -24,7 +25,7 @@ class _HomePageState extends State<HomePage> {
           stream: FirebaseFirestore.instance.collection('todos').snapshots(),
           builder:
               (BuildContext context, AsyncSnapshot<dynamic> streamSnapshot) {
-            return streamSnapshot.hasData
+               return streamSnapshot.hasData
                 ? Container(
                     color: bgColor,
                     padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
